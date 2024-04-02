@@ -191,41 +191,29 @@
       const formData = {
         name: document.getElementById("solar-calc-user-name").value,
         email: document.getElementById("solar-calc-user-email").value,
-        offerOptIn: document.getElementById("solar-calc-offer-opt-in").checked
+        offerOptIn: document.getElementById("solar-calc-offer-opt-in").checked,
+        // Include the result or any other data you wish to send
+        result: "Good lad"
       };
-      fetch('/submit-solar-calc-form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-        .then(data => {
-        // Call the Cloud Function endpoint to send the email
-        return fetch('https://europe-west4-optimum-courier-418018.cloudfunctions.net/sendAutoReplyEmail', {
+    
+      // Call the Cloud Function endpoint directly to send the email
+      fetch('https://europe-west4-optimum-courier-418018.cloudfunctions.net/sendAutoReplyEmail', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: formData.email }), // Adjust according to your function's expected input
-        });
-    })
-    .then(response => {
-        if (!response.ok) {
-        throw new Error('Email sending response was not ok');
-        }
-        alert('Thank you for your submission. We will contact you with a personalized offer soon!');
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again later.');
-    });
+        body: JSON.stringify(formData), // Adjust according to your function's expected input
+      })
+      .then(response => {
+          if (!response.ok) {
+          throw new Error('Email sending response was not ok');
+          }
+          alert('Thank you for your submission. We will contact you with a personalized offer soon!');
+      })
+      .catch((error) => {
+          console.error('Error:', error);
+          alert('An error occurred. Please try again later.');
+      });
     }
     function calculateSavings(previewMode = false) {
       if (!validateInputs()) {
