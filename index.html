@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+ <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Solar Savings Calculator</title>
+ <style>
+  body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .solar-calc-container {
+      max-width: 600px;
+      margin: auto;
+    }
+    .solar-calc-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #ccc;
+    }
+    .solar-calc-label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    .solar-calc-input, .solar-calc-select, .solar-calc-button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .solar-calc-tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .solar-calc-tooltip-text {
+      visibility: hidden;
+      width: 220px;
+      background-color: black;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .solar-calc-tooltip:hover .solar-calc-tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+    .error-message {
+      color: red;
+      margin-top: 5px;
+    }
+ </style>
+</head>
+ 
+ <body>
+ <div class="solar-calc-container">
+  <h2>
+   Solar Energy Savings Calculator
+  </h2>
+  <section id="solar-calc-user-inputs" class="solar-calc-section">
+   <label class="solar-calc-label" for="solar-calc-annual-usage">
+    Yearly Electricity Usage (in kWh):
+    <span class="solar-calc-tooltip">
+     ⓘ
+     <span class="solar-calc-tooltip-text" role="tooltip" aria-hidden="true">
+      This is what an average household consumes yearly in the Netherlands.
+     </span>
+    </span>
+   </label>
+   <input type="number" class="solar-calc-input" id="solar-calc-annual-usage" placeholder="3100" min="1" required="">
+   <div id="solar-calc-annual-usage-error" class="error-message">
+   </div>
+   <label class="solar-calc-label" for="solar-calc-monthly-bill">
+    Average Monthly Electricity Bill (in €):
+    <span class="solar-calc-tooltip">
+     ⓘ
+     <span class="solar-calc-tooltip-text" role="tooltip" aria-hidden="true">
+      This is the average monthly bill for a household in the Netherlands.
+     </span>
+    </span>
+   </label>
+   <input type="number" class="solar-calc-input" id="solar-calc-monthly-bill" placeholder="120" min="1" required="">
+   <div id="solar-calc-monthly-bill-error" class="error-message">
+   </div>
+   <label class="solar-calc-label" for="solar-calc-panel-number">
+    Number of Solar Panels:
+    <span class="solar-calc-tooltip">
+     ⓘ
+     <span class="solar-calc-tooltip-text" role="tooltip" aria-hidden="true">
+      Based on the average size and capacity of solar panels in the Netherlands.
+     </span>
+    </span>
+   </label>
+   <input type="number" class="solar-calc-input" id="solar-calc-panel-number" placeholder="10" min="1" required="">
+   <div id="solar-calc-panel-number-error" class="error-message">
+   </div>
+   <label class="solar-calc-label" for="solar-calc-roof-type">
+    Type of Roof:
+    <span class="solar-calc-tooltip">
+     ⓘ
+     <span class="solar-calc-tooltip-text" role="tooltip" aria-hidden="true">
+      Select the type of your rooftop to get a more accurate calculation.
+     </span>
+    </span>
+   </label>
+   <select id="solar-calc-roof-type" class="solar-calc-select">
+    <option value="flat">
+     Flat Roof
+    </option>
+    <option value="pitched">
+     Pitched Roof
+    </option>
+    <option value="shaded">
+     Shaded Roof
+    </option>
+   </select>
+   <button type="button" class="solar-calc-button" onclick="requestPersonalInfo()">
+    Calculate Savings
+   </button>
+  </section>
+  <div id="solar-calc-preview-results" class="solar-calc-section" style="display:none;">
+  </div>
+  <form id="solar-calc-offer-form" class="solar-calc-section" style="display:none;" onsubmit="event.preventDefault(); submitForm();">
+   <label class="solar-calc-label" for="solar-calc-user-name">
+    Name:
+   </label>
+   <input type="text" class="solar-calc-input" id="solar-calc-user-name" name="name" placeholder="Your Name" required="">
+   <label class="solar-calc-label" for="solar-calc-user-email">
+    Email:
+   </label>
+   <input type="email" class="solar-calc-input" id="solar-calc-user-email" name="email" placeholder="Your Email" required="">
+   <label class="solar-calc-label" for="solar-calc-offer-opt-in">
+    <input type="checkbox" id="solar-calc-offer-opt-in" name="offer_opt_in" value="on">
+    I agree to receive a personalized offer based on my calculated savings.
+   </label>
+   <button type="submit" class="solar-calc-button">
+    Send me a personalized offer
+   </button>
+  </form>
+  <p id="solar-calc-savings-result" class="solar-calc-section" style="display:none;">
+  </p>
+  <div id="solar-calc-comparison-result" class="comparison-result">
+  </div>
+  <p id="solar-calc-disclaimer" class="solar-calc-section">
+   <strong>
+    Note:
+   </strong>
+   This calculator provides estimates based on average values for solar panel efficiency and energy costs in the Netherlands. Actual savings may vary based on individual circumstances and market changes. For a precise assessment, consult with a solar energy expert.
+  </p>
+ </div>
+ <script>
+  function requestPersonalInfo() {
+      if (calculateSavings(true)) {
+        document.getElementById('solar-calc-user-inputs').style.display = 'none';
+      }
+    }
+    function validateInputs() {
+      let isValid = true;
+      document.getElementById('solar-calc-annual-usage-error').textContent = '';
+      document.getElementById('solar-calc-monthly-bill-error').textContent = '';
+      document.getElementById('solar-calc-panel-number-error').textContent = '';
+      const annualUsage = document.getElementById('solar-calc-annual-usage').value;
+      if (annualUsage < 1) {
+        document.getElementById('solar-calc-annual-usage-error').textContent = "Yearly Electricity Usage must be greater than 0.";
+        isValid = false;
+      }
+      const monthlyBill = document.getElementById('solar-calc-monthly-bill').value;
+      if (monthlyBill < 1) {
+        document.getElementById('solar-calc-monthly-bill-error').textContent = "Average Monthly Electricity Bill must be greater than 0.";
+        isValid = false;
+      }
+      const panelNumber = document.getElementById('solar-calc-panel-number').value;
+      if (panelNumber < 1) {
+        document.getElementById('solar-calc-panel-number-error').textContent = "Number of Solar Panels must be greater than 0.";
+        isValid = false;
+      }
+      return isValid;
+    }
+    function submitForm() {
+      if (!validateInputs()) {
+        return; // Stop the function if validation fails
+      }
+      const formData = {
+        name: document.getElementById("solar-calc-user-name").value,
+        email: document.getElementById("solar-calc-user-email").value,
+        offerOptIn: document.getElementById("solar-calc-offer-opt-in").checked
+      };
+      fetch('/submit-solar-calc-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+        .then(data => {
+        // Call the Cloud Function endpoint to send the email
+        return fetch('https://europe-west4-optimum-courier-418018.cloudfunctions.net/sendAutoReplyEmail', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: formData.email }), // Adjust according to your function's expected input
+        });
+    })
+    .then(response => {
+        if (!response.ok) {
+        throw new Error('Email sending response was not ok');
+        }
+        alert('Thank you for your submission. We will contact you with a personalized offer soon!');
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again later.');
+    });
+    }
+    function calculateSavings(previewMode = false) {
+      if (!validateInputs()) {
+        return false; // Return false if inputs are invalid
+      }
+      const basePanelEfficiency = 137.5; // in kWh/m²/year
+      const panelSize = 1.65; // in m²
+      const electricityCost = 0.215; // in Euro per kWh
+      const defaultAnnualUsage = 3100; // default average annual usage in kWh
+      const efficiencyAdjustments = {
+          'flat': 1.00,
+          'pitched': 0.95,
+          'shaded': 0.85
+      };
+      let annualUsageInput = document.getElementById('solar-calc-annual-usage').value;
+      let panelNumberInput = document.getElementById('solar-calc-panel-number').value;
+      let monthlyBillInput = document.getElementById('solar-calc-monthly-bill').value;
+      let roofTypeInput = document.getElementById('solar-calc-roof-type').value;
+      let annualUsage = parseFloat(annualUsageInput) || defaultAnnualUsage;
+      let panelNumber = parseInt(panelNumberInput, 10);
+      let monthlyElectricityBill = parseFloat(monthlyBillInput);
+      let roofType = roofTypeInput;
+      let panelEfficiency = basePanelEfficiency * (efficiencyAdjustments[roofType] || 1);
+      let annualGeneration = panelNumber * panelSize * panelEfficiency;
+      let annualSavings = annualGeneration * electricityCost;
+      let percentSavings = ((annualSavings / (monthlyElectricityBill * 12)) * 100).toFixed(2);
+      let previewHtml =
+          '<strong>Preview of Your Savings:</strong><br>' +
+          'Annual Savings: €' + annualSavings.toFixed(2) + '<br>' +
+          'Percent Savings on Your Bill: ' + percentSavings + '%';
+      document.getElementById('solar-calc-preview-results').innerHTML = previewHtml;
+      document.getElementById('solar-calc-preview-results').style.display = 'block';
+      document.getElementById('solar-calc-offer-form').style.display = 'block';
+      return true; // Return true to indicate successful calculation
+    }
+ </script>
+ </body>
+ </html>
