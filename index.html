@@ -80,12 +80,15 @@
   </div>
 
   <script>
+    let globalAnnualSavings = 0;
+    let globalAnnualGeneration = 0;
+
     function requestPersonalInfo() {
       if (calculateSavings(true)) {
         document.getElementById('solar-calc-user-inputs').style.display = 'none';
       }
     }
-   
+
     function validateInputs() {
       let isValid = true;
       document.getElementById('solar-calc-annual-usage-error').textContent = '';
@@ -134,11 +137,12 @@
       let annualGeneration = panelNumber * panelSize * panelEfficiency;
       let annualSavings = annualGeneration * electricityCost;
       let percentSavings = ((annualSavings / (monthlyElectricityBill * 12)) * 100).toFixed(2);
+      globalAnnualGeneration = annualGeneration;
+      globalAnnualSavings = annualSavings;
       let previewHtml =
         '<strong>Voorbeeld van uw besparingen:</strong><br>' +
         'Jaarlijkse besparingen: €' + annualSavings.toFixed(2) + '<br>' +
         'Percentage besparingen op uw rekening: ' + percentSavings + '%';
-      
       document.getElementById('solar-calc-preview-results').innerHTML = previewHtml;
       document.getElementById('solar-calc-preview-results').style.display = 'block';
       document.getElementById('solar-calc-offer-form').style.display = 'block';
@@ -155,7 +159,8 @@
         email: document.getElementById("solar-calc-user-email").value,
         address: document.getElementById("solar-calc-user-address").value,
         offerOptIn: document.getElementById("solar-calc-offer-opt-in").checked,
-        result: calculateSavings() // Assume this is how you want to use the result
+        annualGeneration: globalAnnualGeneration,
+        annualSavings: globalAnnualSavings
       };
       fetch('https://europe-west4-optimum-courier-418018.cloudfunctions.net/sendAutoReplyEmail', {
         method: 'POST',
