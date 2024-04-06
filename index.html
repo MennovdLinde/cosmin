@@ -160,7 +160,7 @@
         address: document.getElementById("solar-calc-user-address").value,
         offerOptIn: document.getElementById("solar-calc-offer-opt-in").checked,
         annualGeneration: globalAnnualGeneration,
-        annualSavings: globalAnnualSavings
+        annualSavings: globalAnnualSavings.toFixed(2)
       };
       fetch('https://europe-west4-optimum-courier-418018.cloudfunctions.net/sendAutoReplyEmail', {
         method: 'POST',
