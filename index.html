@@ -43,9 +43,9 @@
           <div class="form-group">
             <label for="solar-calc-roof-type">Type dak:</label>
             <select class="form-control" id="solar-calc-roof-type">
-              <option value="flat">Plat dak</option>
-              <option value="pitched">Hellend dak</option>
-              <option value="shaded">Beschaduwd dak</option>
+              <option value="Plat">Plat dak</option>
+              <option value="Hellend">Hellend dak</option>
+              <option value="Beschaduwd">Beschaduwd dak</option>
             </select>
           </div>
           <button type="button" class="btn" onclick="requestPersonalInfo()">Bereken besparingen</button>
@@ -121,9 +121,9 @@
       const electricityCost = 0.215; // in Euro per kWh
       const defaultAnnualUsage = 3100; // default average annual usage in kWh
       const efficiencyAdjustments = {
-        'flat': 1.00,
-        'pitched': 0.95,
-        'shaded': 0.85
+        'Plat': 1.00,
+        'Hellend': 0.95,
+        'Beschaduwd': 0.85
       };
       let annualUsageInput = document.getElementById('solar-calc-annual-usage').value;
       let panelNumberInput = document.getElementById('solar-calc-panel-number').value;
